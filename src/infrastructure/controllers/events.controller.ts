@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { UseZodGuard } from 'nestjs-zod';
 import { z } from 'nestjs-zod/z';
@@ -43,11 +43,15 @@ export type ExternalEventDTO = z.infer<typeof ExternalEventSchema>;
 
 @Controller('events')
 export class EventsController {
-  constructor(private eventBus: EventBus) {}
+  private readonly logger = new Logger(EventsController.name);
+
+  constructor(private eventBus: EventBus) { }
 
   @Post()
   @UseZodGuard('body', ExternalEventSchema)
   async receiveEvent(@Body() externalEvent: ExternalEventDTO) {
+    this.logger.log(`Received event: ${externalEvent.type}`);
+
     switch (externalEvent.type) {
       case 'booking_created':
         this.eventBus.publish(
@@ -57,6 +61,7 @@ export class EventsController {
             externalEvent.slot,
           ),
         );
+        this.logger.log(`Processed booking_created event for clubId: ${externalEvent.clubId}, courtId: ${externalEvent.courtId}`);
         break;
       case 'booking_cancelled':
         this.eventBus.publish(
@@ -66,11 +71,13 @@ export class EventsController {
             externalEvent.slot,
           ),
         );
+        this.logger.log(`Processed booking_cancelled event for clubId: ${externalEvent.clubId}, courtId: ${externalEvent.courtId}`);
         break;
       case 'club_updated':
         this.eventBus.publish(
           new ClubUpdatedEvent(externalEvent.clubId, externalEvent.fields),
         );
+        this.logger.log(`Processed club_updated event for clubId: ${externalEvent.clubId}`);
         break;
       case 'court_updated':
         this.eventBus.publish(
@@ -80,6 +87,10 @@ export class EventsController {
             externalEvent.fields,
           ),
         );
+        this.logger.log(`Processed court_updated event for clubId: ${externalEvent.clubId}, courtId: ${externalEvent.courtId}`);
+        break;
+      default:
+        this.logger.warn(`Unknown event type received: ${(externalEvent as any).type}`);
         break;
     }
   }
