@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import {
@@ -12,35 +12,46 @@ import {
 
 @QueryHandler(GetAvailabilityQuery)
 export class GetAvailabilityHandler
-  implements IQueryHandler<GetAvailabilityQuery>
-{
+  implements IQueryHandler<GetAvailabilityQuery> {
+  private readonly logger = new Logger(GetAvailabilityHandler.name);
+
   constructor(
     @Inject(ALQUILA_TU_CANCHA_CLIENT)
     private alquilaTuCanchaClient: AlquilaTuCanchaClient,
-  ) {}
+  ) { }
 
   async execute(query: GetAvailabilityQuery): Promise<ClubWithAvailability[]> {
-    const clubs_with_availability: ClubWithAvailability[] = [];
+    this.logger.log(`Fetching availability for placeId: ${query.placeId} and date: ${query.date}`);
+
     const clubs = await this.alquilaTuCanchaClient.getClubs(query.placeId);
-    for (const club of clubs) {
-      const courts = await this.alquilaTuCanchaClient.getCourts(club.id);
-      const courts_with_availability: ClubWithAvailability['courts'] = [];
-      for (const court of courts) {
-        const slots = await this.alquilaTuCanchaClient.getAvailableSlots(
-          club.id,
-          court.id,
-          query.date,
+
+    const clubs_with_availability = await Promise.all(
+      clubs.map(async (club) => {
+        const courts = await this.alquilaTuCanchaClient.getCourts(club.id);
+
+        const courts_with_availability = await Promise.all(
+          courts.map(async (court) => {
+            const slots = await this.alquilaTuCanchaClient.getAvailableSlots(
+              club.id,
+              court.id,
+              query.date,
+            );
+            return {
+              ...court,
+              available: slots,
+            };
+          }),
         );
-        courts_with_availability.push({
-          ...court,
-          available: slots,
-        });
-      }
-      clubs_with_availability.push({
-        ...club,
-        courts: courts_with_availability,
-      });
-    }
+
+        return {
+          ...club,
+          courts: courts_with_availability,
+        };
+      }),
+    );
+
+    this.logger.log(`Availability fetched successfully for placeId: ${query.placeId} and date: ${query.date}`);
+
     return clubs_with_availability;
   }
 }
