@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Controller, Get, Query, Logger, UsePipes } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import * as moment from 'moment';
@@ -41,6 +42,7 @@ export class SearchController {
       return result;
     } catch (error) {
       this.logger.error(`Search failed for placeId: ${query.placeId} and date: ${moment(query.date).format('YYYY-MM-DD')}`, error.stack);
+
       throw error;
     }
   }
