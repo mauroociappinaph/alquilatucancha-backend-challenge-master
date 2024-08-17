@@ -3,7 +3,6 @@ import { QueryBus } from '@nestjs/cqrs';
 import * as moment from 'moment';
 import { createZodDto, ZodValidationPipe } from 'nestjs-zod';
 import { z } from 'nestjs-zod/z';
-
 import {
   ClubWithAvailability,
   GetAvailabilityQuery,
