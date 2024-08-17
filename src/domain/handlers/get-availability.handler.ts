@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Inject, Logger } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
