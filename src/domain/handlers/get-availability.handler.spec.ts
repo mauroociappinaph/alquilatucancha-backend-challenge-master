@@ -1,5 +1,5 @@
+/* eslint-disable */
 import * as moment from 'moment';
-
 import { AlquilaTuCanchaClient } from '../../domain/ports/aquila-tu-cancha.client';
 import { GetAvailabilityQuery } from '../commands/get-availaiblity.query';
 import { Club } from '../model/club';
@@ -18,10 +18,10 @@ describe('GetAvailabilityHandler', () => {
 
   it('returns the availability', async () => {
     client.clubs = {
-      '123': [{ id: 1 }],
+      '123': [{ id: 1, name: 'Club 1', location: 'Location 1', courts: [] }],
     };
     client.courts = {
-      '1': [{ id: 1 }],
+      '1': [{ id: 1, name: 'Court 1', available: [] }],
     };
     client.slots = {
       '1_1_2022-12-05': [],
@@ -33,7 +33,7 @@ describe('GetAvailabilityHandler', () => {
       new GetAvailabilityQuery(placeId, date),
     );
 
-    expect(response).toEqual([{ id: 1, courts: [{ id: 1, available: [] }] }]);
+    expect(response).toEqual([{ id: 1, name: 'Club 1', location: 'Location 1', courts: [{ id: 1, name: 'Court 1', available: [] }] }]); // Añadidas propiedades faltantes
   });
 });
 
@@ -41,12 +41,15 @@ class FakeAlquilaTuCanchaClient implements AlquilaTuCanchaClient {
   clubs: Record<string, Club[]> = {};
   courts: Record<string, Court[]> = {};
   slots: Record<string, Slot[]> = {};
+
   async getClubs(placeId: string): Promise<Club[]> {
     return this.clubs[placeId];
   }
+
   async getCourts(clubId: number): Promise<Court[]> {
     return this.courts[String(clubId)];
   }
+
   async getAvailableSlots(
     clubId: number,
     courtId: number,
