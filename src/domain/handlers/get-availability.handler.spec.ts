@@ -69,7 +69,7 @@ class FakeRedisService {
   private store = new Map<string, string>();
 
   async get(key: string): Promise<string | null> {
-    return this.store.get(key) || null;
+    return this.store.get(key) ?? null;
   }
 
   async set(key: string, value: string, ttl: number): Promise<void> {

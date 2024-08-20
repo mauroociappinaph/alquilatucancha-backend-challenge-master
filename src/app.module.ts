@@ -17,9 +17,9 @@ import { RedisModule } from './redis.module'; // Importa el módulo de Redis
     HttpModule,
     CqrsModule,
     ConfigModule.forRoot(),
-    RedisModule, // Agrega RedisModule a los imports
+    RedisModule,
   ],
-  controllers: [SearchController, EventsController], // Asegúrate de que haya una coma al final si es necesario
+  controllers: [SearchController, EventsController],
   providers: [
     {
       provide: ALQUILA_TU_CANCHA_CLIENT,
