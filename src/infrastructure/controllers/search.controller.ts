@@ -40,7 +40,7 @@ export class SearchController {
       );
       this.logger.log(`Search completed successfully.`);
       return result;
-    } catch (error) {
+    } catch (error: any) { // Explicitly type "error" as "any"
       this.logger.error(`Search failed for placeId: ${query.placeId} and date: ${moment(query.date).format('YYYY-MM-DD')}`, error.stack);
 
       throw error;
