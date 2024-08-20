@@ -25,17 +25,15 @@ export class GetAvailabilityHandler
   async execute(query: GetAvailabilityQuery): Promise<ClubWithAvailability[]> {
     this.logger.log(`Fetching availability for placeId: ${query.placeId} and date: ${query.date}`);
 
-    // Genera una clave única para el caché usando el placeId y la fecha
+
     const cacheKey = `availability:${query.placeId}:${query.date}`;
 
-    // Intenta obtener la respuesta desde el caché
     const cachedResponse = await this.redisService.get(cacheKey);
     if (cachedResponse) {
       this.logger.log(`Cache hit for placeId: ${query.placeId} and date: ${query.date}`);
       return JSON.parse(cachedResponse);  // Retorna la respuesta desde el caché
     }
 
-    // Si no está en caché, realiza las solicitudes a la API mock
     const clubs = await this.alquilaTuCanchaClient.getClubs(query.placeId);
 
     const clubs_with_availability = await Promise.all(
@@ -63,7 +61,7 @@ export class GetAvailabilityHandler
       }),
     );
 
-    // Guarda la respuesta en el caché con un TTL (por ejemplo, 1 hora)
+
     await this.redisService.set(cacheKey, JSON.stringify(clubs_with_availability), 3600);
 
     this.logger.log(`Cache set for placeId: ${query.placeId} and date: ${query.date}`);
