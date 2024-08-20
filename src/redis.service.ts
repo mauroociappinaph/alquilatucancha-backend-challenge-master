@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Injectable, OnModuleInit, OnModuleDestroy, Inject } from '@nestjs/common';
-import { RedisClientType, createClient } from 'redis';
+import { RedisClientType } from 'redis';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
@@ -13,7 +13,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
 
     onModuleInit() {
-        this.client.connect().catch(console.error); // Conectar al cliente Redis
+        this.client.connect().catch(console.error);
 
         this.client.on('error', (err) => {
             console.log("Error " + err);

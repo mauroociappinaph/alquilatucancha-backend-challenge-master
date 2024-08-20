@@ -41,7 +41,7 @@ describe('RedisService', () => {
                 if (event === 'error') {
                     handler(new Error('Redis connection error'));
                 }
-                return redisClientMock;  // Ensure that the mock returns the correct type
+                return redisClientMock;
             });
 
             service.onModuleInit();
