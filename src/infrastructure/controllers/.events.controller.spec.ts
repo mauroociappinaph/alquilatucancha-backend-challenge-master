@@ -39,7 +39,7 @@ describe('EventsController', () => {
     describe('receiveEvent', () => {
         it('should handle booking_created event', async () => {
             const event = {
-                type: 'booking_created' as const, // Asegúrate de que el tipo sea exacto
+                type: 'booking_created' as const,
                 clubId: 1,
                 courtId: 2,
                 slot: {
@@ -63,7 +63,7 @@ describe('EventsController', () => {
 
         it('should handle booking_cancelled event', async () => {
             const event = {
-                type: 'booking_cancelled' as const, // Asegúrate de que el tipo sea exacto
+                type: 'booking_cancelled' as const,
                 clubId: 1,
                 courtId: 2,
                 slot: {
@@ -87,7 +87,7 @@ describe('EventsController', () => {
 
         it('should handle club_updated event', async () => {
             const event = {
-                type: 'club_updated' as const, // Asegúrate de que el tipo sea exacto
+                type: 'club_updated' as const,
                 clubId: 1,
                 fields: ['attributes', 'openhours'] as ('attributes' | 'openhours')[],
             };
@@ -103,7 +103,7 @@ describe('EventsController', () => {
 
         it('should handle court_updated event', async () => {
             const event = {
-                type: 'court_updated' as const, // Asegúrate de que el tipo sea exacto
+                type: 'court_updated' as const,
                 clubId: 1,
                 courtId: 2,
                 fields: ['attributes', 'name'] as ('attributes' | 'name')[],

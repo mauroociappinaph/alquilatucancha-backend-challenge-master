@@ -17,7 +17,7 @@ describe('ClubUpdatedHandler', () => {
     describe('handle', () => {
         it('should log the club update', () => {
             const logSpy = jest.spyOn(handler['logger'], 'log');
-            const event = new ClubUpdatedEvent(12345, []); // Usamos un número en lugar de un string
+            const event = new ClubUpdatedEvent(12345, []);
 
             handler.handle(event);
 
