@@ -19,7 +19,7 @@ export class GetAvailabilityHandler
   constructor(
     @Inject(ALQUILA_TU_CANCHA_CLIENT)
     private alquilaTuCanchaClient: AlquilaTuCanchaClient,
-    private redisService: RedisService  // Inyecta RedisService
+    private redisService: RedisService
   ) { }
 
   async execute(query: GetAvailabilityQuery): Promise<ClubWithAvailability[]> {
@@ -31,7 +31,7 @@ export class GetAvailabilityHandler
     const cachedResponse = await this.redisService.get(cacheKey);
     if (cachedResponse) {
       this.logger.log(`Cache hit for placeId: ${query.placeId} and date: ${query.date}`);
-      return JSON.parse(cachedResponse);  // Retorna la respuesta desde el caché
+      return JSON.parse(cachedResponse);
     }
 
     const clubs = await this.alquilaTuCanchaClient.getClubs(query.placeId);
