@@ -53,46 +53,53 @@ export class EventsController {
   async receiveEvent(@Body() externalEvent: ExternalEventDTO) {
     this.logger.log(`Received event: ${externalEvent.type}`);
 
-    switch (externalEvent.type) {
-      case 'booking_created':
-        this.eventBus.publish(
-          new SlotBookedEvent(
-            externalEvent.clubId,
-            externalEvent.courtId,
-            externalEvent.slot,
-          ),
-        );
-        this.logger.log(`Processed booking_created event for clubId: ${externalEvent.clubId}, courtId: ${externalEvent.courtId}`);
-        break;
-      case 'booking_cancelled':
-        this.eventBus.publish(
-          new SlotAvailableEvent(
-            externalEvent.clubId,
-            externalEvent.courtId,
-            externalEvent.slot,
-          ),
-        );
-        this.logger.log(`Processed booking_cancelled event for clubId: ${externalEvent.clubId}, courtId: ${externalEvent.courtId}`);
-        break;
-      case 'club_updated':
-        this.eventBus.publish(
-          new ClubUpdatedEvent(externalEvent.clubId, externalEvent.fields),
-        );
-        this.logger.log(`Processed club_updated event for clubId: ${externalEvent.clubId}`);
-        break;
-      case 'court_updated':
-        this.eventBus.publish(
-          new CourtUpdatedEvent(
-            externalEvent.clubId,
-            externalEvent.courtId,
-            externalEvent.fields,
-          ),
-        );
-        this.logger.log(`Processed court_updated event for clubId: ${externalEvent.clubId}, courtId: ${externalEvent.courtId}`);
-        break;
-      default:
-        this.logger.warn(`Unknown event type received: ${(externalEvent as any).type}`);
-        break;
+    try {
+      switch (externalEvent.type) {
+        case 'booking_created':
+          this.eventBus.publish(
+            new SlotBookedEvent(
+              externalEvent.clubId,
+              externalEvent.courtId,
+              externalEvent.slot,
+            ),
+          );
+          this.logger.log(`Processed booking_created event for clubId: ${externalEvent.clubId}, courtId: ${externalEvent.courtId}`);
+          break;
+        case 'booking_cancelled':
+          this.eventBus.publish(
+            new SlotAvailableEvent(
+              externalEvent.clubId,
+              externalEvent.courtId,
+              externalEvent.slot,
+            ),
+          );
+          this.logger.log(`Processed booking_cancelled event for clubId: ${externalEvent.clubId}, courtId: ${externalEvent.courtId}`);
+          break;
+        case 'club_updated':
+          this.eventBus.publish(
+            new ClubUpdatedEvent(externalEvent.clubId, externalEvent.fields),
+          );
+          this.logger.log(`Processed club_updated event for clubId: ${externalEvent.clubId}`);
+          break;
+        case 'court_updated':
+          this.eventBus.publish(
+            new CourtUpdatedEvent(
+              externalEvent.clubId,
+              externalEvent.courtId,
+              externalEvent.fields,
+            ),
+          );
+          this.logger.log(`Processed court_updated event for clubId: ${externalEvent.clubId}, courtId: ${externalEvent.courtId}`);
+          break;
+        default:
+          this.logger.warn(`Unknown event type received: ${(externalEvent as any).type}`);
+          return { status: 'error', message: `Unknown event type: ${(externalEvent as any).type}` };
+      }
+
+      return { status: 'success', message: 'Event processed successfully' };
+    } catch (error: any) {
+      this.logger.error(`Error processing event: ${externalEvent.type}`, error.stack || error);
+      return { status: 'error', message: 'Failed to process event' };
     }
   }
 }

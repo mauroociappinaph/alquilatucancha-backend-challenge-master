@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios'; // Corregido: importar desde @nestjs/axios
+import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment';
 
@@ -8,14 +8,18 @@ import { Club } from '../../domain/model/club';
 import { Court } from '../../domain/model/court';
 import { Slot } from '../../domain/model/slot';
 import { AlquilaTuCanchaClient } from '../../domain/ports/aquila-tu-cancha.client';
+import { RedisService } from '../../redis.service';
 
 @Injectable()
 export class HTTPAlquilaTuCanchaClient implements AlquilaTuCanchaClient {
   private base_url = '';
-  private cache = new Map<string, any>();
   private readonly logger = new Logger(HTTPAlquilaTuCanchaClient.name);
 
-  constructor(private httpService: HttpService, config: ConfigService) {
+  constructor(
+    private httpService: HttpService,
+    config: ConfigService,
+    private redisService: RedisService,
+  ) {
     this.base_url = config.get<string>('ATC_BASE_URL', 'http://localhost:4000');
   }
 
@@ -23,18 +27,22 @@ export class HTTPAlquilaTuCanchaClient implements AlquilaTuCanchaClient {
     key: string,
     fetchFn: () => Promise<T>,
   ): Promise<T> {
-    if (this.cache.has(key)) {
-      this.logger.log(`Cache hit for key: ${key}`);
-      return this.cache.get(key);
-    }
-
-    this.logger.log(`Cache miss for key: ${key}. Fetching from API.`);
     try {
+      // Intenta obtener el valor desde Redis
+      const cachedData = await this.redisService.get(key);
+      if (cachedData) {
+        this.logger.log(`Cache hit for key: ${key}`);
+        return JSON.parse(cachedData);
+      }
+
+      this.logger.log(`Cache miss for key: ${key}. Fetching from API.`);
       const data = await fetchFn();
-      this.cache.set(key, data);
+
+      // Almacena la respuesta en Redis
+      await this.redisService.set(key, JSON.stringify(data), 3600);
       this.logger.log(`Data fetched and cached for key: ${key}`);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to fetch data for key: ${key}`, error.stack || error);
       throw error;
     }
@@ -72,9 +80,7 @@ export class HTTPAlquilaTuCanchaClient implements AlquilaTuCanchaClient {
       throw new Error('Missing required parameters');
     }
 
-    const cacheKey = `slots:${clubId}:${courtId}:${moment(date).format(
-      'YYYY-MM-DD',
-    )}`;
+    const cacheKey = `slots:${clubId}:${courtId}:${moment(date).format('YYYY-MM-DD')}`;
     return this.getCachedOrFetch(cacheKey, () =>
       this.httpService.axiosRef
         .get(`/clubs/${clubId}/courts/${courtId}/slots`, {
@@ -106,14 +112,14 @@ export class HTTPAlquilaTuCanchaClient implements AlquilaTuCanchaClient {
               const slots = await this.getAvailableSlots(club.id, court.id, date);
               return {
                 ...court,
-                available: slots,  // Aquí se asegura que cada court tiene la propiedad available
+                available: slots,
               };
             }),
           );
 
           return {
             ...club,
-            courts: courtsWithAvailability,  // Aseguramos que cada club tiene la propiedad courts
+            courts: courtsWithAvailability,
           };
         }),
       );

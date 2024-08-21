@@ -46,7 +46,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         }
     }
 
-    // Nuevo método para eliminar una clave
+
     async del(key: string): Promise<void> {
         try {
             await this.client.del(key);
