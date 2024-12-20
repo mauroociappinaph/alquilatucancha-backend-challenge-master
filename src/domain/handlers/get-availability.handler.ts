@@ -1,7 +1,13 @@
+<<<<<<< HEAD
+import { Inject } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+
+=======
 /* eslint-disable */
 import { Inject, Logger } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { RedisService } from '../../redis.service';  // Asegúrate de que la ruta es correcta
+>>>>>>> upstream/main
 import {
   ClubWithAvailability,
   GetAvailabilityQuery,
@@ -13,6 +19,20 @@ import {
 
 @QueryHandler(GetAvailabilityQuery)
 export class GetAvailabilityHandler
+<<<<<<< HEAD
+  implements IQueryHandler<GetAvailabilityQuery>
+{
+  constructor(
+    @Inject(ALQUILA_TU_CANCHA_CLIENT)
+    private alquilaTuCanchaClient: AlquilaTuCanchaClient,
+  ) {}
+
+  async execute(query: GetAvailabilityQuery): Promise<ClubWithAvailability[]> {
+    // Paso 1: Obtener todos los clubes
+    const clubs = await this.alquilaTuCanchaClient.getClubs(query.placeId);
+
+    // Paso 2: Obtener las canchas y sus disponibilidades en paralelo
+=======
   implements IQueryHandler<GetAvailabilityQuery> {
   private readonly logger = new Logger(GetAvailabilityHandler.name);
 
@@ -36,6 +56,7 @@ export class GetAvailabilityHandler
 
     const clubs = await this.alquilaTuCanchaClient.getClubs(query.placeId);
 
+>>>>>>> upstream/main
     const clubs_with_availability = await Promise.all(
       clubs.map(async (club) => {
         const courts = await this.alquilaTuCanchaClient.getCourts(club.id);
@@ -61,6 +82,12 @@ export class GetAvailabilityHandler
       }),
     );
 
+<<<<<<< HEAD
+    return clubs_with_availability;
+  }
+
+}
+=======
 
     await this.redisService.set(cacheKey, JSON.stringify(clubs_with_availability), 3600);
 
@@ -69,3 +96,4 @@ export class GetAvailabilityHandler
     return clubs_with_availability;
   }
 }
+>>>>>>> upstream/main

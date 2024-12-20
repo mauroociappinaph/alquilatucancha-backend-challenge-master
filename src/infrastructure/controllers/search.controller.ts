@@ -1,5 +1,9 @@
+<<<<<<< HEAD
+import { Controller, Get, Query, UsePipes } from '@nestjs/common';
+=======
 /* eslint-disable */
 import { Controller, Get, Query, Logger, UsePipes } from '@nestjs/common';
+>>>>>>> upstream/main
 import { QueryBus } from '@nestjs/cqrs';
 import * as moment from 'moment';
 import { createZodDto, ZodValidationPipe } from 'nestjs-zod';
@@ -19,6 +23,24 @@ const GetAvailabilitySchema = z.object({
     .transform((date) => moment(date).toDate()),
 });
 
+<<<<<<< HEAD
+class GetAvailabilityDTO extends createZodDto(GetAvailabilitySchema) {}
+
+@Controller('search')
+export class SearchController {
+  constructor(private queryBus: QueryBus) {}
+
+  @Get()
+  @UsePipes(ZodValidationPipe)
+  searchAvailability(
+    @Query() query: GetAvailabilityDTO,
+  ): Promise<ClubWithAvailability[]> {
+    return this.queryBus.execute(
+      new GetAvailabilityQuery(query.placeId, query.date),
+    );
+  }
+}
+=======
 class GetAvailabilityDTO extends createZodDto(GetAvailabilitySchema) { }
 
 @Controller('search')
@@ -47,3 +69,4 @@ export class SearchController {
     }
   }
 }
+>>>>>>> upstream/main
